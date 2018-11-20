@@ -8,6 +8,7 @@ Date: 19.11.2018
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
  typedef struct exam {
 	char course[5];
@@ -43,11 +44,13 @@ int main(void) {
 		scanf_s(" %c", &read_flag);
 		flush_stdin();
 
+		student_t student;
+
 		if (read_flag == 'j') {
 		
 		}
 		else if (read_flag == 'n') {
-			student_t student;
+			
 			create_student(&student);
 
 			printf("[DEBUG] Name: %s Nachname: %s Matrikelnummer: %d\n", student.first_name, student.last_name, student.mat_num);	//[DEBUG]
@@ -58,38 +61,25 @@ int main(void) {
 
 			if (exam_input_flag == 'j') {
 				do {
-					if (student.pfirst_exam == NULL) {		// Check if the first exam is available
-						
-						exam_t *pfirst_exam = NULL;
-						pfirst_exam = (exam_t*)malloc(sizeof(exam_t));					//MALLOC!?
+					exam_t *pexam = NULL;
+					pexam = (struct exam*)malloc(sizeof(struct exam));					//MALLOC!?
 
-						if (pfirst_exam == NULL) {
-							free(pfirst_exam);
-							printf("Allocation 1 failed!\n");
-						}
-
-						//[DEBUG]
-						pfirst_exam->course = "test";		// GEHT NICHT!?
-
-						printf("\n[DEBUG] pfirst_exam: %p\n", pfirst_exam);
-						add_first_exam(&student, pfirst_exam);
-
-						printf("[DEBUG]  %s %d %s %s \n", pfirst_exam->course, pfirst_exam->points, pfirst_exam->date, pfirst_exam->prof);	//[DEBUG]
+					if (pexam == NULL) {
+						free(pexam);
+						printf("Allocation 1 failed!\n");
 					}
-					else {	// If it's not the first exam
-						exam_t *pexam = (exam_t*)malloc(sizeof(exam_t));;	// MALLOC?!
-						
-						if (pexam == NULL) {
-							free(pexam);
-							printf("Allocation´2 failed!\n");
+					
+					printf("[DEBUG] Erstelltes pexam (malloc): %x\n", pexam);
+
+					if (student.pfirst_exam == NULL) {		// Check if the first exam is available
+						add_first_exam(&student, pexam);
 						}
-
+					else {	// If it's not the first exam
 						add_exam(&student, pexam);
-
-						printf("[DEBUG]  %s %d %s %s %p\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
-
 					} 
 					
+					printf("[DEBUG]  Gerade erstellt: Kurs: %s Punkte: %d Datum: %s Prof: %s Next: %x  (sollte 0 sein)\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
+
 					printf("Wollen Sie weitere Pruefungen eingeben? [J/N]: ");
 					scanf_s(" %c", &exam_input_flag);
 					flush_stdin();
@@ -104,6 +94,21 @@ int main(void) {
 		
 	//} while (loop_flag != 'q');
 
+	//DEBUG:
+
+		exam_t *ptemp_examdb = student.pfirst_exam;
+		int i = 1;
+		while (ptemp_examdb != NULL) {	// Läuft bis next-ptr == NULL ist
+			
+			printf("[DEBUG] %d.Pruefung: Kurs: %s Adresse: %x\n",i, ptemp_examdb->course, ptemp_examdb);
+			ptemp_examdb = ptemp_examdb->pnext_exam;
+			i++;
+		}
+		/*
+		printf("1.Pruefung: Course: %s, %x\n", student.pfirst_exam->course, student.pfirst_exam);
+		printf("2.Pruefung: Course: %s, %x\n", student.pfirst_exam->pnext_exam->course, student.pfirst_exam->pnext_exam);
+		printf("3.Pruefung: Course: %s, %x\n", student.pfirst_exam->pnext_exam->pnext_exam->course, student.pfirst_exam->pnext_exam->pnext_exam);
+		*/
 	system("PAUSE");
 	return 0;
 }
@@ -160,17 +165,17 @@ void add_exam(student_t *pstudent, exam_t *pexam) {
 	enter_exam_data(pexam);
 
 	exam_t *ptemp_exam = pstudent->pfirst_exam;
-	printf("\n[DEBUG] pstudent->pfirst_exam: %p, ptemp_exam: %p\n", pstudent->pfirst_exam, ptemp_exam);
 
 	if (ptemp_exam == NULL) {
 		printf("Keine erste Prueufng angelegt!\n");
 		return;
 	}
 
-	while (ptemp_exam->pnext_exam != NULL) {
+	while (ptemp_exam->pnext_exam != NULL) {	// Läuft bis next-ptr == NULL ist
 		ptemp_exam = ptemp_exam->pnext_exam;
-		printf("\n[DEBUG] ptemp_exam: %p Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
+		printf("[DEBUG] Neue Pruefung wird gehängt an: ptemp_exam: %x Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
 	}
-	ptemp_exam->pnext_exam = pexam;
-	printf("\n[DEBUG] NACH WHILE: ptemp_exam->pnext_exam: %p pexam: %p\n", ptemp_exam->pnext_exam, pexam);
+	ptemp_exam->pnext_exam = pexam;	// pexam wird letzter prüfung zugeweisen
+	pexam->pnext_exam = NULL;
+	printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
 }
