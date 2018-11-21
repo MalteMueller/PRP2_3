@@ -4,7 +4,7 @@ Name: Malte Müller, Fabian Liebold
 Date: 19.11.2018
 */
 
-//#define _CRT_SECURE_NO_WARNINGS	//?
+#define _CRT_SECURE_NO_WARNINGS	//?
 
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +31,8 @@ void create_student(student_t *pstudent);
 void enter_exam_data(exam_t *pexam);
 void add_first_exam(student_t *pstudent, exam_t *pfirst_exam);
 void add_exam(student_t *pstudent, exam_t *pexam);
+void print_exam(student_t *student);
+void free_all(student_t *student);
 
 int main(void) {
 	
@@ -94,21 +96,9 @@ int main(void) {
 		
 	//} while (loop_flag != 'q');
 
-	//DEBUG:
-
-		exam_t *ptemp_examdb = student.pfirst_exam;
-		int i = 1;
-		while (ptemp_examdb != NULL) {	// Läuft bis next-ptr == NULL ist
-			
-			printf("[DEBUG] %d.Pruefung: Kurs: %s Adresse: %x\n",i, ptemp_examdb->course, ptemp_examdb);
-			ptemp_examdb = ptemp_examdb->pnext_exam;
-			i++;
-		}
-		/*
-		printf("1.Pruefung: Course: %s, %x\n", student.pfirst_exam->course, student.pfirst_exam);
-		printf("2.Pruefung: Course: %s, %x\n", student.pfirst_exam->pnext_exam->course, student.pfirst_exam->pnext_exam);
-		printf("3.Pruefung: Course: %s, %x\n", student.pfirst_exam->pnext_exam->pnext_exam->course, student.pfirst_exam->pnext_exam->pnext_exam);
-		*/
+	print_exam(&student);
+	// free_all(&student);	// Hier ist ein wurm
+	
 	system("PAUSE");
 	return 0;
 }
@@ -178,4 +168,30 @@ void add_exam(student_t *pstudent, exam_t *pexam) {
 	ptemp_exam->pnext_exam = pexam;	// pexam wird letzter prüfung zugeweisen
 	pexam->pnext_exam = NULL;
 	printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
+}
+
+void print_exam(student_t *student) {
+
+	printf("Die Pruefungen des Studenten sind:\n\n");
+
+	exam_t *ptemp_examdb = student->pfirst_exam;
+	while (ptemp_examdb != NULL) {	// Läuft bis next-ptr == NULL ist
+
+		printf("Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof);
+		ptemp_examdb = ptemp_examdb->pnext_exam;
+		
+	}
+
+}
+
+void free_all(student_t *student) {	// Löschung läuft nicht
+
+	exam_t *ptemp_examdb = student->pfirst_exam;
+	
+	while (ptemp_examdb != NULL) {	// Läuft bis next-ptr == NULL ist
+
+		printf("CLEARED: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof);
+		free(ptemp_examdb);
+		ptemp_examdb = ptemp_examdb->pnext_exam;
+	}
 }
