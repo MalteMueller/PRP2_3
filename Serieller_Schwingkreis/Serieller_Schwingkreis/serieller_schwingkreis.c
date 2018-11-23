@@ -4,8 +4,11 @@ Name: Malte Müller, Fabian Liebold
 Date: 22.11.2018
 */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
-#include  <math.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define PI 3.14159265359
 #define FILEPATH "data.csv" 
@@ -22,9 +25,9 @@ typedef struct schwingkreis {
 
 void print_menu();
 void print_values(schwingkreis_t schwingkreis);
-int create_ue_fkt(schwingkreis_t schwingkreis);
+double **create_ue_fkt(int schritte);
 void calculate_values(schwingkreis_t schwingkreis);
-void save_values(schwingkreis_t schwingkreis);
+void save_values(double **ue_fkt, int schritte);
 
 int main(void) {
 
@@ -45,16 +48,18 @@ int main(void) {
 			break;
 		
 		case 'b':
-			if (create_ue_fkt(schwingkreis)) return 1;
+			schwingkreis.ue_fkt = create_ue_fkt(schwingkreis.schritte);
+			if (schwingkreis.ue_fkt == NULL)return 1;
 
-			//calculate_values(schwingkreis);	// nicht bevor alles create-fkt läuft
+			calculate_values(schwingkreis);	// nicht bevor alles create-fkt läuft
+			//printf("TEST: [4][3]: %f\n", schwingkreis.ue_fkt[4][3]); //funzzzt
 			break;
 
 		case 'c':
 			break;
 
 		case 'd':
-			//save_values(schwingkreis)	// Nicht bevor create-fkt und calculate-fkt läuft
+			save_values(schwingkreis.ue_fkt, schwingkreis.schritte);	// Nicht bevor create-fkt und calculate-fkt läuft
 			break;
 
 		case 'q':
@@ -96,34 +101,32 @@ void print_values(schwingkreis_t schwingkreis) {
 	printf("----------------------------------------------\n\n");
 }
 
-int create_ue_fkt(schwingkreis_t schwingkreis) {
+double **create_ue_fkt(int schritte) {
 	
-	printf("[DEBUG] schwingkreis.ue_fkt pointer vor Zuweisung: %x\n", schwingkreis.ue_fkt);
-	
-	schwingkreis.ue_fkt = (double**)malloc(schwingkreis.schritte * sizeof(double*));
+	double **tmp = (double**)malloc(schritte * sizeof(double*));
 
-	printf("[DEBUG] schwingkreis.ue_fkt pointer: %x\n", schwingkreis.ue_fkt);
+	printf("[DEBUG] tmp pointer: %x\n", tmp);
 	
 
-	if (schwingkreis.ue_fkt == NULL) {
-		free(schwingkreis.ue_fkt);
-		return 1;
+	if (tmp == NULL) {
+		free(tmp);
+		return NULL;
 	}
 
-	for (int i = 0; i < schwingkreis.schritte; i++) {
-		schwingkreis.ue_fkt[i] = (double*)malloc(5 * sizeof(double));
+	for (int i = 0; i < schritte; i++) {
+		tmp[i] = (double*)malloc(5 * sizeof(double));
 
-		printf("[DEBUG] schwingkreis.ue_fkt[%d] pointer: %x\n", i, schwingkreis.ue_fkt[i]);
+		printf("[DEBUG] tmp[%d] pointer: %x\n", i, tmp[i]);
 
-		if (schwingkreis.ue_fkt[i] == NULL) {
+		if (tmp[i] == NULL) {
 			for (int j = 0; j <= i; j++) {
-				free(schwingkreis.ue_fkt[j]);
+				free(tmp[j]);
 			}
-			free(schwingkreis.ue_fkt);
-		return 1;
+			free(tmp);
+			return NULL;
 		}
 	}
-	return 0;
+	return tmp;
 }
 
 void calculate_values(schwingkreis_t schwingkreis){
@@ -152,14 +155,17 @@ void calculate_values(schwingkreis_t schwingkreis){
 	}
 }
 
-void save_values(schwingkreis_t schwingkreis) {
-	FILE* data_stream = fopen(FILEPATH, "w");
+void save_values(double **ue_fkt, int schritte) {
+	FILE* data_stream;
+	data_stream = fopen(FILEPATH, "w");
 
 	fprintf(data_stream, "f, Re, Im, Betrag, Phase\n");
 
-	for (int i = 0; i < schwingkreis.schritte; i++) {
+	printf("TEST: [4][3]: %f\n", ue_fkt[4][3]); 
+
+	for (int i = 0; i < schritte; i++) {
 		for (int y = 0; y < 5; y++) {
-			fprintf(data_stream, "%d", schwingkreis.ue_fkt[i][y]);
+			fprintf(data_stream, "%f", ue_fkt[i][y]);
 			if(y != 4) fprintf(data_stream, ",");
 		}
 		fprintf(data_stream, "\n");
