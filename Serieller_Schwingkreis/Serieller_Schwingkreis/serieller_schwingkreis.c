@@ -1,7 +1,7 @@
 /*
 PRP2-2 Aufgabe 7.2
 Name: Malte Müller, Fabian Liebold
-Date: 22.11.2018
+Date: 25.11.2018
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -12,6 +12,7 @@ Date: 22.11.2018
 
 #define PI 3.14159265359
 #define FILEPATH "data.csv" 
+#define TZ ","
 
 typedef struct schwingkreis {
 	double R;
@@ -23,11 +24,13 @@ typedef struct schwingkreis {
 	double **ue_fkt;
 } schwingkreis_t;
 
-void print_menu();
-void print_values(schwingkreis_t schwingkreis);
+char menu(void);
+void print_parameters(FILE* out, schwingkreis_t *schwingkreis);
+void print_values(FILE* out, schwingkreis_t *schwingkreis, char tz);
 double **create_ue_fkt(int schritte);
 void calculate_values(schwingkreis_t schwingkreis);
-void save_values(double **ue_fkt, int schritte);
+void change_frequency(schwingkreis_t *schwingkreis);
+void free_memory(schwingkreis_t *schwingkreis);
 
 int main(void) {
 
@@ -38,13 +41,12 @@ int main(void) {
 	char user_input;
 
 	do {
-		print_menu();
-		scanf_s(" %c", &user_input);
+		user_input = menu();
 
 		switch (user_input)
 		{
 		case 'a':
-			print_values(schwingkreis);
+			print_parameters(stdout, &schwingkreis);
 			break;
 		
 		case 'b':
@@ -52,21 +54,28 @@ int main(void) {
 			if (schwingkreis.ue_fkt == NULL)return 1;
 
 			calculate_values(schwingkreis);	// nicht bevor alles create-fkt läuft
-			//printf("TEST: [4][3]: %f\n", schwingkreis.ue_fkt[4][3]); //funzzzt
+			//print_values(stdout, &schwingkreis, TZ);
+
 			break;
 
 		case 'c':
+			change_frequency(&schwingkreis);
 			break;
 
 		case 'd':
-			save_values(schwingkreis.ue_fkt, schwingkreis.schritte);	// Nicht bevor create-fkt und calculate-fkt läuft
+			FILE *data_stream;
+			data_stream = fopen(FILEPATH, "w");
+			print_parameters(data_stream, &schwingkreis, TZ);
+			print_values(data_stream, &schwingkreis, TZ);	
+			fclose(data_stream);
 			break;
 
 		case 'q':
+			free_memory(&schwingkreis);
 			break;
 
 		default:
-			printf("Ungueltige Eingabe!\n");
+			printf("Fehler!\n");
 			break;
 		}
 
@@ -77,28 +86,40 @@ int main(void) {
 	return 0;
 }
 
-void print_menu() {
-	printf("----------- Serieller Schwingkreis -----------\n\n");
-	printf("A - Anzeige der Schwingkreisparameter\n");
-	printf("B - Werte berechnen und ausgeben\n");
-	printf("C - Frequenzbereich und Schritte abfragen\n");
-	printf("D - Werte speichern\n\n");
-	printf("----------------------------------------------\n\n");
-	printf("Q - Beenden des Programms\n\n");
-	printf("----------------------------------------------\n\n");
+char menu(void) {
+	
+
+	char tmp = ' ';
+	do {
+		printf("----------- Serieller Schwingkreis -----------\n\n");
+		printf("A - Anzeige der Schwingkreisparameter\n");
+		printf("B - Werte berechnen und ausgeben\n");
+		printf("C - Frequenzbereich und Schritte abfragen\n");
+		printf("D - Werte speichern\n\n");
+		printf("----------------------------------------------\n\n");
+		printf("Q - Beenden des Programms\n\n");
+		printf("----------------------------------------------\n\n");
+		printf("Auswahl: ");
+
+		scanf_s(" %c", &tmp);
+
+	} while (tmp != 'a' && tmp != 'b' && tmp != 'c' && tmp != 'd' && tmp != 'q');
+
+	return tmp;
+
 }
 
-void print_values(schwingkreis_t schwingkreis) {
-	printf("++++++++++++++++++++++++++++++++++++++++++++++\n\n");
-	printf("Schwingkreisparameter:\n");
-	printf("++++++++++++++++++++++++++++++++++++++++++++++\n\n");
-	printf("Widerstandswert\t%f Ohm\n", schwingkreis.R);
-	printf("Induktionswert\t%f H\n", schwingkreis.L);
-	printf("Kapazitätswert\t%f Ohm\n", schwingkreis.C);
-	printf("Frequenzintervall - untere Grenze\t%f Hz\n", schwingkreis.fmin);
-	printf("Frequenzintervall - obere Grenze\t%f Hz\n", schwingkreis.fmax);
-	printf("Anzahl der Schritte\t%d \n", schwingkreis.schritte);
-	printf("----------------------------------------------\n\n");
+void print_parameters(FILE* out, schwingkreis_t *schwingkreis) {
+	fprintf(out, "++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+	fprintf(out, "Schwingkreisparameter:\n");
+	fprintf(out, "++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+	fprintf(out, "Widerstandswert\t%f Ohm\n", schwingkreis->R);
+	fprintf(out, "Induktionswert\t%f H\n", schwingkreis->L);
+	fprintf(out, "Kapazitätswert\t%f Ohm\n", schwingkreis->C);
+	fprintf(out, "Frequenzintervall - untere Grenze\t%f Hz\n", schwingkreis->fmin);
+	fprintf(out, "Frequenzintervall - obere Grenze\t%f Hz\n", schwingkreis->fmax);
+	fprintf(out, "Anzahl der Schritte\t%d \n", schwingkreis->schritte);
+	fprintf(out, "----------------------------------------------\n\n");
 }
 
 double **create_ue_fkt(int schritte) {
@@ -155,20 +176,50 @@ void calculate_values(schwingkreis_t schwingkreis){
 	}
 }
 
-void save_values(double **ue_fkt, int schritte) {
-	FILE* data_stream;
-	data_stream = fopen(FILEPATH, "w");
+void change_frequency(schwingkreis_t *schwingkreis) {
+	int tmp;
+	do {
+		printf("Frequenz - Eingabe der unteren Grenze[10, 10000]: ");
+		scanf_s(" %d", &tmp);
+	} while (tmp<10 || tmp>10000);
 
-	fprintf(data_stream, "f, Re, Im, Betrag, Phase\n");
+	schwingkreis->fmin = tmp;
 
-	printf("TEST: [4][3]: %f\n", ue_fkt[4][3]); 
+	do {
+		printf("Frequenz - Eingabe der oberen Grenze[300, 100000]: ");
+		scanf_s(" %d", &tmp);
+	} while (tmp<300 || tmp>100000);
 
-	for (int i = 0; i < schritte; i++) {
+	schwingkreis->fmax = tmp;
+
+	do {
+		printf("Frequenz - Eingabe der Schrittanzahl[2, 50]: ");
+		scanf_s(" %d", &tmp);
+	} while (tmp<2 || tmp>50);
+
+	schwingkreis->schritte = tmp;
+}
+
+void print_values(FILE* out, schwingkreis_t *schwingkreis, char tz) {
+	
+
+	fprintf(out, "f, Re, Im, Betrag, Phase\n");
+
+	printf("TEST: [4][3]: %f\n", schwingkreis->ue_fkt[4][3]); 
+
+	for (int i = 0; i < schwingkreis->schritte; i++) {
 		for (int y = 0; y < 5; y++) {
-			fprintf(data_stream, "%f", ue_fkt[i][y]);
-			if(y != 4) fprintf(data_stream, ",");
+			fprintf(out, "%f", schwingkreis->ue_fkt[i][y]);
+			if(y != 4) fprintf(out, TZ);
 		}
-		fprintf(data_stream, "\n");
+		fprintf(out, "\n");
 	}
-	fclose(data_stream);
+}
+
+void free_memory(schwingkreis_t *schwingkreis) {
+
+	for (int i = 0; i < schwingkreis->schritte; i++) {
+		free(schwingkreis->ue_fkt[i]);
+	}
+	free(schwingkreis->ue_fkt);
 }
