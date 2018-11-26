@@ -382,6 +382,8 @@ void load_list(student_t *student) {		// [UNCLEAR]
 	else{
 		while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {	// [RESUME HERE]
 			printf("Kurs: %s Points: %d Date: %s Prof: %s Pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);
+
+			
 		}
 	}
 	fclose(f);	// Close file
