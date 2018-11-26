@@ -10,7 +10,7 @@ Date: 19.11.2018
 #include <stdio.h>
 #include <stdlib.h>
 
- typedef struct exam {
+ typedef struct exam {		// define exam_t
 	char course[5];
 	int points;
 	char date[8];
@@ -19,13 +19,14 @@ Date: 19.11.2018
 } exam_t;
 
 
-typedef struct student {
+typedef struct student {	// define student_t
 	char first_name[25];
 	char last_name[25];
 	int mat_num;
 	exam_t *pfirst_exam;
 } student_t;
 
+// Prototypes:
 void flush_stdin();
 void create_student(student_t *pstudent);
 void enter_exam_data(exam_t *pexam);
@@ -40,107 +41,123 @@ void load_list(student_t *student);
 
 int main(void) {
 	
-	char loop_flag = ' ';
+	char loop_flag = ' ';	// flags for if-else-routine
 	char read_flag;
 	char exam_input_flag;
 	char save_flag = ' ';
 
-	//do {
+	printf("Wollen Sie Daten aus der Datei liste.dat lesen? [J/N]: ");
+	scanf_s(" %c", &read_flag);
+	flush_stdin();
 
-		printf("Wollen Sie Daten aus der Datei liste.dat lesen? [J/N]: ");
-		scanf_s(" %c", &read_flag);
+	student_t student;
+
+	if (read_flag == 'j') {	// If User wants to read in data by file
+		load_list(&student);
+		printf("[DEBUG] LOADED STUDENT: Name: %s Nachname: %s Mat-Num: %d *pfirst_exam: %x\n", student.first_name, student.last_name, student.mat_num, student.pfirst_exam);
+	}
+	else if (read_flag == 'n') {	// If User wants to type in data
+			
+		create_student(&student);	// Create student
+
+		printf("[DEBUG] Name: %s Nachname: %s Matrikelnummer: %d\n", student.first_name, student.last_name, student.mat_num);	//[DEBUG]
+
+		printf("Wollen Sie Pruefungen eingeben? [J/N]: ");	// Ask User to input exam
+		scanf_s(" %c", &exam_input_flag);
 		flush_stdin();
 
-		student_t student;
+		if (exam_input_flag == 'j') {	// If user wants to input exam
+			do {
+				exam_t *pexam = NULL;
+				pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
 
-		if (read_flag == 'j') {
-			load_list(&student);
-			printf("[DEBUG] LOADED STUDENT: Name: %s Nachname: %s Mat-Num: %d *pfirst_exam: %x\n", student.first_name, student.last_name, student.mat_num, student.pfirst_exam);
-		}
-		else if (read_flag == 'n') {
-			
-			create_student(&student);
+				if (pexam == NULL) {	// Free memory and raise error if allocation failed
+					free(pexam);
+					printf("Allocation failed!\n");
+				}
+					
+				printf("[DEBUG] Erstelltes pexam (malloc): %x\n", pexam);
 
-			printf("[DEBUG] Name: %s Nachname: %s Matrikelnummer: %d\n", student.first_name, student.last_name, student.mat_num);	//[DEBUG]
-
-			printf("Wollen Sie Pruefungen eingeben? [J/N]: ");
-			scanf_s(" %c", &exam_input_flag);
-			flush_stdin();
-
-			if (exam_input_flag == 'j') {
-				do {
-					exam_t *pexam = NULL;
-					pexam = (struct exam*)malloc(sizeof(struct exam));					//MALLOC!?
-
-					if (pexam == NULL) {
-						free(pexam);
-						printf("Allocation 1 failed!\n");
+				if (student.pfirst_exam == NULL) {		// Check if the first exam is available
+					add_first_exam(&student, pexam);	// Add fist exam struct (its pointer to student struct)
 					}
+				else {	// If it's not the first exam
+					add_exam(&student, pexam);	// Add exam to list (its pointer to latest exam struct)
+				} 
 					
-					printf("[DEBUG] Erstelltes pexam (malloc): %x\n", pexam);
+				printf("[DEBUG]  Gerade erstellt: Kurs: %s Punkte: %d Datum: %s Prof: %s Next: %x  (sollte 0 sein)\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
 
-					if (student.pfirst_exam == NULL) {		// Check if the first exam is available
-						add_first_exam(&student, pexam);
-						}
-					else {	// If it's not the first exam
-						add_exam(&student, pexam);
-					} 
-					
-					printf("[DEBUG]  Gerade erstellt: Kurs: %s Punkte: %d Datum: %s Prof: %s Next: %x  (sollte 0 sein)\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
-
-					printf("Wollen Sie weitere Pruefungen eingeben? [J/N]: ");
-					scanf_s(" %c", &exam_input_flag);
-					flush_stdin();
-				} while (exam_input_flag == 'j');
-			}
-			else if (read_flag == 'n') {	// If no exam should be added
+				printf("Wollen Sie weitere Pruefungen eingeben? [J/N]: ");	// Ask User to input another exam
+				scanf_s(" %c", &exam_input_flag);
+				flush_stdin();
+			} while (exam_input_flag == 'j');	// Exit loop, if user don't want to add another exam 
+		}
+		else if (read_flag == 'n') {	// If no exam should be added
 			
-			}
-			else printf("Ungueltige Eingabe!\n");
 		}
 		else printf("Ungueltige Eingabe!\n");
+	}
+	else printf("Ungueltige Eingabe!\n");
 		
-	//} while (loop_flag != 'q');
-
-	print_exam(&student);
-	search_course(&student); 
-	search_points(&student);
 	
-	printf("Wollen Sie die Elemente speichern? ");
+
+	print_exam(&student);	// Print list of exams
+	search_course(&student);	// Search exam by course-name
+	search_points(&student);	// Searce exam by points
+	
+	printf("Wollen Sie die Elemente speichern? ");	// Ask User to save data
 	scanf_s(" %c", &save_flag);
 
-	if (save_flag == 'j') {
+	if (save_flag == 'j') {	// If User wants to save data
 		save_list(&student);
 	}
 
-	free_all(&student);	// error
+	free_all(&student);	// Free memory [ERROR][TODO][PRIO]
 
 	system("PAUSE");
 	return 0;
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**************************************************************************************************
+Function flushes input stream.
+Parameters:
+	void.
+Returns:
+	void.
+*/
 void flush_stdin() {
 	int flush_dummy;
 	while ((flush_dummy = getchar()) != '\n' && flush_dummy != EOF);
 }
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**************************************************************************************************
+Function creates a student struct
+Parameters:
+	student_t *pstundent - student struct pointer
+Returns:
+	void.
+*/
 void create_student(student_t *pstudent) {
 
 	printf("Geben Sie einen Studenten ein:\n");
 	printf("Nachname: ");
-	gets(pstudent->last_name);
+	gets(pstudent->last_name);	// User types in last name
 	//flush_stdin();
 	printf("Name: ");
-	gets(pstudent->first_name);
+	gets(pstudent->first_name);	// User types in first name
 	//flush_stdin();
 	printf("Matrikelnummer: ");
-	scanf_s(" %d", &(pstudent->mat_num));
+	scanf_s(" %d", &(pstudent->mat_num));	// User types in mat-number
 	//flush_stdin();
 
-	pstudent->pfirst_exam = NULL;
+	pstudent->pfirst_exam = NULL;	// Pointer to first exam is set to NULL
 }
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**************************************************************************************************	[RESUME HERE]
+DESCRIBTION
+Parameters:
+void.
+Returns:
+void.
+*/
 void enter_exam_data(exam_t *pexam) {
 	
 	printf("Eingeben einer Prüfung:\n");
