@@ -54,13 +54,13 @@ int main(void) {
 
 	if (read_flag == 'j') {	// If User wants to read in data by file
 		load_list(&student);
-		printf("[DEBUG] LOADED STUDENT: Name: %s Nachname: %s Mat-Num: %d *pfirst_exam: %x\n", student.first_name, student.last_name, student.mat_num, student.pfirst_exam);
+		//printf("[DEBUG] LOADED STUDENT: Name: %s Nachname: %s Mat-Num: %d *pfirst_exam: %x\n", student.first_name, student.last_name, student.mat_num, student.pfirst_exam);
 	}
 	else if (read_flag == 'n') {	// If User wants to type in data
 			
 		create_student(&student);	// Create student
 
-		printf("[DEBUG] Name: %s Nachname: %s Matrikelnummer: %d\n", student.first_name, student.last_name, student.mat_num);	//[DEBUG]
+		//printf("[DEBUG] Name: %s Nachname: %s Matrikelnummer: %d\n", student.first_name, student.last_name, student.mat_num);	//[DEBUG]
 
 		printf("Wollen Sie Pruefungen eingeben? [J/N]: ");	// Ask User to input exam
 		scanf_s(" %c", &exam_input_flag);
@@ -76,7 +76,7 @@ int main(void) {
 					printf("Allocation failed!\n");
 				}
 					
-				printf("[DEBUG] Erstelltes pexam (malloc): %x\n", pexam);
+				//printf("[DEBUG] Erstelltes pexam (malloc): %x\n", pexam);
 
 				if (student.pfirst_exam == NULL) {		// Check if the first exam is available
 					add_first_exam(&student, pexam);	// Add fist exam struct (its pointer to student struct)
@@ -85,7 +85,7 @@ int main(void) {
 					add_exam(&student, pexam);	// Add exam to list (its pointer to latest exam struct)
 				} 
 					
-				printf("[DEBUG]  Gerade erstellt: Kurs: %s Punkte: %d Datum: %s Prof: %s Next: %x  (sollte 0 sein)\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
+				//printf("[DEBUG]  Gerade erstellt: Kurs: %s Punkte: %d Datum: %s Prof: %s Next: %x  (sollte 0 sein)\n", pexam->course, pexam->points, pexam->date, pexam->prof, pexam->pnext_exam);	//[DEBUG]
 
 				printf("Wollen Sie weitere Pruefungen eingeben? [J/N]: ");	// Ask User to input another exam
 				scanf_s(" %c", &exam_input_flag);
@@ -213,11 +213,11 @@ void add_exam(student_t *pstudent, exam_t *pexam) {
 
 	while (ptemp_exam->pnext_exam != NULL) {	// Loops through until last element with next pointer = NULL
 		ptemp_exam = ptemp_exam->pnext_exam;	// Set temporary pointer to next exam struct
-		printf("[DEBUG] Neue Pruefung wird gehängt an: ptemp_exam: %x Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
+		//printf("[DEBUG] Neue Pruefung wird gehängt an: ptemp_exam: %x Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
 	}
 	ptemp_exam->pnext_exam = pexam;	// Set the next-pointer of the last element in list to the new exam struct pointer
 	pexam->pnext_exam = NULL;	// Set next-pointer of new struct to NULL -> now the last element in list
-	printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
+	//printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
 }
 /**************************************************************************************************
 Functions prints a list with the exams of the student.
@@ -250,7 +250,7 @@ void free_all(student_t *student) {	// [TODO][ERROR][PRIO]
 	
 	while (ptemp_examdb != NULL) {	// Loops through until last element with next pointer = NULL
 
-		printf("CLEARED: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof);	//[DEBUG]
+		//printf("CLEARED: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof);	//[DEBUG]
 		//free(ptemp_examdb);	//[ERROR]
 		ptemp_examdb = ptemp_examdb->pnext_exam; // Set temporary pointer to next exam struct
 	}
@@ -276,8 +276,8 @@ void search_course(student_t *pstudent) {
 
 	while (ptemp_examdb != NULL) {	// Loops through until last element with next pointer = NULL
 
-		printf("SEARCH: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof); //[DEBUG]
-		printf("[DEBUG] ptemp_examdb->course: %s, course: %s\n", ptemp_examdb->course, course);	//[DEBUG]
+		//printf("SEARCH: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof); //[DEBUG]
+		//printf("[DEBUG] ptemp_examdb->course: %s, course: %s\n", ptemp_examdb->course, course);	//[DEBUG]
 
 		if (~strcmp(ptemp_examdb->course, course)) {	// If course names are equal -> course found -> break loop
 			pexam_search = ptemp_examdb;
@@ -308,8 +308,8 @@ void search_points(student_t *pstudent) {
 
 	while (ptemp_examdb != NULL) {	// Loops through until last element with next pointer = NULL
 
-		printf("SEARCH POINTS: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof); //[DEBUG]
-		printf("[DEBUG] ptemp_examdb->points: %d, points: %d\n", ptemp_examdb->points, points); //[DEBUG]
+		//printf("SEARCH POINTS: Veranstaltung: %s Datum: %s Punkte: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof); //[DEBUG]
+		//printf("[DEBUG] ptemp_examdb->points: %d, points: %d\n", ptemp_examdb->points, points); //[DEBUG]
 
 		if (ptemp_examdb->points < points) {	// If points of exam is lower than the typed in points, the couse gets printed to console
 			printf("Die gesuchte Veranstaltung ist: %s Datum: %s Note: %d Pruefer: %s\n", ptemp_examdb->course, ptemp_examdb->date, ptemp_examdb->points, ptemp_examdb->prof);
@@ -368,22 +368,19 @@ void load_list(student_t *student) {		// [UNCLEAR]
 	}
 
 	fread(student, sizeof(student_t), 1, f);	// Read student struct data and write it to tmp
-	printf("student->name: %s nachname: %s mat: %d pointer: %x\n", student->first_name, student->last_name,student->mat_num, student->pfirst_exam);	//[DEBUG]
-	
-	//exam_t *last_ptr = student->pfirst_exam;	// Pointer von student auf 1. exam
-	//exam_t *next_ptr = NULL;
+	//printf("student->name: %s nachname: %s mat: %d pointer: %x\n", student->first_name, student->last_name,student->mat_num, student->pfirst_exam);	//[DEBUG]
 
 	fseek(f, sizeof(student_t), SEEK_SET); // [TRY]
 	int first_exam_flag = 1;
 	exam_t *pexam = NULL;
 	exam_t *pexam_old = student->pfirst_exam;
+	
 	while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {
 		
-		printf("exam_tmp->course: %s points: %d date: %s prof: %s pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);//[DEBUG] 
+		//printf("exam_tmp->course: %s points: %d date: %s prof: %s pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);//[DEBUG] 
 		
 		pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
 		
-
 		strcpy(pexam->course, exam_tmp.course);
 		pexam->points = exam_tmp.points;
 		strcpy(pexam->date, exam_tmp.date);	//[ERROR] lvalue must be changeable?
@@ -396,32 +393,6 @@ void load_list(student_t *student) {		// [UNCLEAR]
 		}else pexam_old->pnext_exam = pexam;		// Zuweisung des neuen elements an alten
 		
 		pexam_old = pexam;	// nächster pointer
-		
-
 	}
-																			
-																			/*
-	result = fseek(f, sizeof(student_t), SEEK_SET);	//[UNCLEAR] Set file pointer to first exam struct
-	if (result) {	// Handl errors
-		printf("Fehler!");
-	}
-	else{
-		exam_t *ptemp_examdb = student->pfirst_exam;	// Set temporary exam pointer to the pointer of the first exam struct [ERROR]
-		int i = 1;
-		while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {	// [RESUME HERE]
-			printf("Kurs: %s Points: %d Date: %s Prof: %s Pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);
-			
-			strcpy(ptemp_examdb->course, exam_tmp.course);	
-			//ptemp_examdb->points = exam_tmp.points;
-			strcpy(ptemp_examdb->date, exam_tmp.date);	//[ERROR] lvalue must be changeable?
-			ptemp_examdb->pnext_exam = exam_tmp.pnext_exam;
-			
-			printf("[DEBUG] Durchlauf: %d\n", i);// [DEBUG]
-			i++; // [DEBUG]
-			ptemp_examdb = ptemp_examdb->pnext_exam;
-			
-		}
-	}
-	*/
 	fclose(f);	// Close file
 }
