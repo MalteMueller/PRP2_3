@@ -356,7 +356,7 @@ Returns:
 */
 void load_list(student_t *student) {		// [UNCLEAR]
 
-	student_t tmp;	// initialise temporary student-struct
+	//student_t *tmp;	// initialise temporary student-struct
 	exam_t exam_tmp; // initialise temporary exam-struct
 	int result;
 
@@ -367,24 +367,61 @@ void load_list(student_t *student) {		// [UNCLEAR]
 		printf("Datei konnte nicht geoeffnet werden!\n");
 	}
 
-	fread(&tmp, sizeof(student_t), 1, f);	// Read student struct data and write it to tmp
-	printf("tmp->name: %s nachname: %s mat: %d pointer: %x\n", tmp.first_name, tmp.last_name,tmp.mat_num, tmp.pfirst_exam);	//[DEBUG]
+	fread(student, sizeof(student_t), 1, f);	// Read student struct data and write it to tmp
+	printf("student->name: %s nachname: %s mat: %d pointer: %x\n", student->first_name, student->last_name,student->mat_num, student->pfirst_exam);	//[DEBUG]
+	
+	//exam_t *last_ptr = student->pfirst_exam;	// Pointer von student auf 1. exam
+	//exam_t *next_ptr = NULL;
 
-	//student->first_name = tmp.first_name;	//[ERROR][PRIO][UNCLEAR] Write values to student struct
-	//student->last_name = tmp.last_name;
-	student->mat_num = tmp.mat_num;
-	student->pfirst_exam = tmp.pfirst_exam;
+	fseek(f, sizeof(student_t), SEEK_SET); // [TRY]
+	int first_exam_flag = 1;
+	exam_t *pexam = NULL;
+	exam_t *pexam_old = student->pfirst_exam;
+	while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {
+		
+		printf("exam_tmp->course: %s points: %d date: %s prof: %s pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);//[DEBUG] 
+		
+		pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
+		
 
+		strcpy(pexam->course, exam_tmp.course);
+		pexam->points = exam_tmp.points;
+		strcpy(pexam->date, exam_tmp.date);	//[ERROR] lvalue must be changeable?
+		strcpy(pexam->prof, exam_tmp.prof);
+		pexam->pnext_exam = NULL;
+
+		if (first_exam_flag) {
+			student->pfirst_exam = pexam;
+			first_exam_flag = 0;
+		}else pexam_old->pnext_exam = pexam;		// Zuweisung des neuen elements an alten
+		
+		pexam_old = pexam;	// nächster pointer
+		
+
+	}
+																			
+																			/*
 	result = fseek(f, sizeof(student_t), SEEK_SET);	//[UNCLEAR] Set file pointer to first exam struct
 	if (result) {	// Handl errors
 		printf("Fehler!");
 	}
 	else{
+		exam_t *ptemp_examdb = student->pfirst_exam;	// Set temporary exam pointer to the pointer of the first exam struct [ERROR]
+		int i = 1;
 		while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {	// [RESUME HERE]
 			printf("Kurs: %s Points: %d Date: %s Prof: %s Pointer: %x\n", exam_tmp.course, exam_tmp.points, exam_tmp.date, exam_tmp.prof, exam_tmp.pnext_exam);
-
+			
+			strcpy(ptemp_examdb->course, exam_tmp.course);	
+			//ptemp_examdb->points = exam_tmp.points;
+			strcpy(ptemp_examdb->date, exam_tmp.date);	//[ERROR] lvalue must be changeable?
+			ptemp_examdb->pnext_exam = exam_tmp.pnext_exam;
+			
+			printf("[DEBUG] Durchlauf: %d\n", i);// [DEBUG]
+			i++; // [DEBUG]
+			ptemp_examdb = ptemp_examdb->pnext_exam;
 			
 		}
 	}
+	*/
 	fclose(f);	// Close file
 }
