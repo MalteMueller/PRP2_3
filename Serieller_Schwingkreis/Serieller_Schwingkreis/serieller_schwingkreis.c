@@ -130,11 +130,11 @@ void print_parameters(FILE* out, schwingkreis_t *schwingkreis) {
 	fprintf(out, "++++++++++++++++++++++++++++++++++++++++++++++\n\n");	// print to given output stream
 	fprintf(out, "Schwingkreisparameter:\n");
 	fprintf(out, "++++++++++++++++++++++++++++++++++++++++++++++\n\n");
-	fprintf(out, "Widerstandswert\t%f Ohm\n", schwingkreis->R);
-	fprintf(out, "Induktionswert\t%f H\n", schwingkreis->L);
-	fprintf(out, "Kapazitätswert\t%f Ohm\n", schwingkreis->C);
-	fprintf(out, "Frequenzintervall - untere Grenze\t%f Hz\n", schwingkreis->fmin);
-	fprintf(out, "Frequenzintervall - obere Grenze\t%f Hz\n", schwingkreis->fmax);
+	fprintf(out, "Widerstandswert\t%lf Ohm\n", schwingkreis->R);
+	fprintf(out, "Induktionswert\t%lf H\n", schwingkreis->L);
+	fprintf(out, "Kapazitätswert\t%lf C\n", schwingkreis->C);
+	fprintf(out, "Frequenzintervall - untere Grenze\t%lf Hz\n", schwingkreis->fmin);
+	fprintf(out, "Frequenzintervall - obere Grenze\t%lf Hz\n", schwingkreis->fmax);
 	fprintf(out, "Anzahl der Schritte\t%d \n", schwingkreis->schritte);
 	fprintf(out, "----------------------------------------------\n\n");
 }
@@ -186,19 +186,19 @@ void calculate_values(schwingkreis_t schwingkreis){
 	printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
 	printf("Schwingkreiswerte:\n");
 	printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
-	printf("f\tRe\tIm\tBetrag\tPhase\n");
+	printf("f\t\tRe\t\tIm\t\tBetrag\t\tPhase\n");
 
 	for (int i = 0; i < schwingkreis.schritte; i++) {																		//Calculate values according to given equations
-		schwingkreis.ue_fkt[i][0] = schwingkreis.fmin + i * (schwingkreis.fmax - schwingkreis.fmin) / schwingkreis.schritte;// f
-		schwingkreis.ue_fkt[i][1] = pow((2 * PI*schwingkreis.ue_fkt[i][0] * schwingkreis.R*schwingkreis.C), 2) /
+		schwingkreis.ue_fkt[i][0] = schwingkreis.fmin + i * (schwingkreis.fmax - schwingkreis.fmin) / (schwingkreis.schritte-1);// f
+		schwingkreis.ue_fkt[i][1] = pow((2 * PI*schwingkreis.ue_fkt[i][0] * schwingkreis.R*schwingkreis.C), 2) / (
 									pow((1 - pow(2 * PI*schwingkreis.ue_fkt[i][0], 2)*schwingkreis.L*schwingkreis.C), 2) +
-									pow((2*PI*schwingkreis.ue_fkt[i][0]* schwingkreis.R*schwingkreis.C), 2);				// Re
+									pow((2*PI*schwingkreis.ue_fkt[i][0]* schwingkreis.R*schwingkreis.C), 2));				// Re
 		schwingkreis.ue_fkt[i][2] = 2*PI*schwingkreis.ue_fkt[i][0]*schwingkreis.R*schwingkreis.C * 
-									(1 - pow(2 * PI*schwingkreis.ue_fkt[i][0], 2)*schwingkreis.L*schwingkreis.C) /
+									(1 - pow(2 * PI*schwingkreis.ue_fkt[i][0], 2)*schwingkreis.L*schwingkreis.C) / (
 									pow((1 - pow(2 * PI*schwingkreis.ue_fkt[i][0], 2)*schwingkreis.L*schwingkreis.C), 2) +
-									pow((2 * PI*schwingkreis.ue_fkt[i][0] * schwingkreis.R*schwingkreis.C), 2);				// Im
+									pow((2 * PI*schwingkreis.ue_fkt[i][0] * schwingkreis.R*schwingkreis.C), 2));				// Im
 		schwingkreis.ue_fkt[i][3] = sqrt(pow(schwingkreis.ue_fkt[i][1], 2) + pow(schwingkreis.ue_fkt[i][2], 2));			// Betrag
-		schwingkreis.ue_fkt[i][4] = atan(schwingkreis.ue_fkt[i][2] / schwingkreis.ue_fkt[i][1]);							// Phase
+		schwingkreis.ue_fkt[i][4] = atan2(schwingkreis.ue_fkt[i][2] , schwingkreis.ue_fkt[i][1]) * 180 / PI;							// Phase
 
 		for (int y = 0; y < 5; y++) {		// Print out values to console [TEMP]
 			printf("%f\t", schwingkreis.ue_fkt[i][y]);
@@ -250,7 +250,7 @@ Returns:
 void print_values(FILE* out, schwingkreis_t *schwingkreis, char tz) {
 	
 
-	fprintf(out, "f, Re, Im, Betrag, Phase\n");	// Print header	[CHANGE]
+	fprintf(out, "f%s Re%s Im%s Betrag%s Phase\n", TZ, TZ ,TZ ,TZ);	// Print header
 
 	//printf("TEST: [4][3]: %f\n", schwingkreis->ue_fkt[4][3]); 
 
