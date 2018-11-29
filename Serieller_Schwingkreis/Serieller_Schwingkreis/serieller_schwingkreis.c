@@ -348,4 +348,9 @@ void read_parameters(FILE* in, schwingkreis_t *schwingkreis) {
 			row++;	// next row
 		} 
 	}
+
+	while (fgets(temp, 1000, in)) {	// Prints values
+		printf("%s", temp);
+	}
+
 }
