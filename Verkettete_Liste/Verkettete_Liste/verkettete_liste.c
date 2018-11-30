@@ -365,7 +365,7 @@ void load_list(student_t *student) {		// [UNCLEAR]
 
 		strcpy(pexam->course, exam_tmp.course);
 		pexam->points = exam_tmp.points;
-		strcpy(pexam->date, exam_tmp.date);	//[ERROR] lvalue must be changeable?
+		strcpy(pexam->date, exam_tmp.date);	// lvalue must be changeable?
 		strcpy(pexam->prof, exam_tmp.prof);
 		pexam->pnext_exam = NULL;
 
