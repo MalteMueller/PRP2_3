@@ -349,8 +349,34 @@ void read_parameters(FILE* in, schwingkreis_t *schwingkreis) {
 		} 
 	}
 
-	while (fgets(temp, 1000, in)) {	// Prints values
-		printf("%s", temp);
+	// Save values to ue_fkt:
+
+	schwingkreis->ue_fkt = create_ue_fkt(schwingkreis->schritte);	// Allocate memory for ue_fkt-matrix
+	if (schwingkreis->ue_fkt == NULL) printf("Allocation failed.\n");	// If an error occures, print notification
+
+	while (fgets(temp, 1000, in)) {	// Skip header and empty rows
+		if (temp[0] == 'f') break;
 	}
 
+	char *pch;
+	int param_counter;	// Counts columns of the matrix
+	int row_counter = 0;	// Counts rows of the matrix
+
+	while (fgets(temp, 1000, in)) {	// Read rest of csv: values
+
+		pch = strtok(temp, ",");
+		param_counter = 0;	
+
+		while (pch != NULL)
+		{	
+			schwingkreis->ue_fkt[row_counter][param_counter] = atof(pch);	// Save value to matrix
+			
+			param_counter++;	// Next parameter
+			pch = strtok(NULL, ",");
+		}
+		
+		row_counter++;	// Next row
+	}
+	printf("Gespeicherte Matrix:\n\n");
+	print_values(stdout, schwingkreis, ' ');	// Print matrix to console
 }
