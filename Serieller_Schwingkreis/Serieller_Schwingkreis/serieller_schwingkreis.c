@@ -39,6 +39,9 @@ int main(void) {
 	char tz_csv = ',';	// Define seperation character for csv and cmd
 	char tz_cmd= ' ';
 
+	FILE *data_stream;					// Create a stream and open the csv-file to write values in it
+	FILE * data_in;					// Create a stream and open the csv-file to read values in it
+
 	schwingkreis_t schwingkreis;		// Initialize schwingkreis and set standard values
 	schwingkreis.R = 100, schwingkreis.L = 0.015, schwingkreis.C = 0.0000018, schwingkreis.fmin = 100;
 	schwingkreis.fmax = 1000, schwingkreis.schritte = 21, schwingkreis.ue_fkt = NULL;
@@ -67,7 +70,7 @@ int main(void) {
 			break;
 
 		case 'd':
-			FILE *data_stream;					// Create a stream and open the csv-file to write values in it
+			
 			data_stream = fopen(FILEPATH, "w");
 			print_parameters(data_stream, &schwingkreis, tz_csv);	// Write parameters into file
 			print_values(data_stream, &schwingkreis, tz_csv);	// Write values into file
@@ -75,7 +78,7 @@ int main(void) {
 			break;
 
 		case 'e':
-			FILE * data_in;					// Create a stream and open the csv-file to read values in it
+			
 			data_in = fopen(FILEPATH, "r");
 
 			read_parameters(data_in, &schwingkreis);

@@ -17,7 +17,7 @@ Date: 19.11.2018
 	char prof[15];
 	struct exam *pnext_exam;
 } exam_t;
-
+ 
 
 typedef struct student {	// define student_t
 	char first_name[25];
@@ -69,20 +69,21 @@ int main(void) {
 				pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
 
 				if (pexam == NULL) {	// Free memory and raise error if allocation failed
-					free(pexam);
 					printf("Allocation failed!\n");
 				}
+				else {
 
-				if (student.pfirst_exam == NULL) {		// Check if the first exam is available
-					add_first_exam(&student, pexam);	// Add fist exam struct (its pointer to student struct)
+					if (student.pfirst_exam == NULL) {		// Check if the first exam is available
+						add_first_exam(&student, pexam);	// Add fist exam struct (its pointer to student struct)
 					}
-				else {	// If it's not the first exam
-					add_exam(&student, pexam);	// Add exam to list (its pointer to latest exam struct)
-				} 
-					
+					else {	// If it's not the first exam
+						add_exam(&student, pexam);	// Add exam to list (its pointer to latest exam struct)
+					}
+				}
 				printf("Wollen Sie weitere Pruefungen eingeben? [J/N]: ");	// Ask User to input another exam
 				scanf_s(" %c", &exam_input_flag);
 				flush_stdin();
+
 			} while (exam_input_flag == 'j');	// Exit loop, if user don't want to add another exam 
 		}
 		else if (read_flag == 'n') {	// If no exam should be added
@@ -105,7 +106,7 @@ int main(void) {
 		save_list(&student);
 	}
 
-	free_all(&student);	// Free memory [ERROR][TODO][PRIO]
+	free_all(&student);	// Free memory 
 
 	system("PAUSE");
 	return 0;
@@ -200,18 +201,19 @@ void add_exam(student_t *pstudent, exam_t *pexam) {
 	exam_t *ptemp_exam = pstudent->pfirst_exam;	// Set temporary exam pointer to the pointer of the first exam struct
 
 	if (ptemp_exam == NULL) {					// Raise error if the poiner in student is NULL
-		printf("Keine erste Prueufng angelegt!\n");
-		return;
+		printf("Keine erste Pruefng angelegt!\n");
 	}
+	else {
 
-	while (ptemp_exam->pnext_exam != NULL) {	// Loops through until last element with next pointer = NULL
-		ptemp_exam = ptemp_exam->pnext_exam;	// Set temporary pointer to next exam struct
-		//printf("[DEBUG] Neue Pruefung wird gehängt an: ptemp_exam: %x Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
+		while (ptemp_exam->pnext_exam != NULL) {	// Loops through until last element with next pointer = NULL
+			ptemp_exam = ptemp_exam->pnext_exam;	// Set temporary pointer to next exam struct
+			//printf("[DEBUG] Neue Pruefung wird gehängt an: ptemp_exam: %x Pruefungsname:%s\n", ptemp_exam, ptemp_exam->course);
+		}
+		ptemp_exam->pnext_exam = pexam;	// Set the next-pointer of the last element in list to the new exam struct pointer
+		pexam->pnext_exam = NULL;	// Set next-pointer of new struct to NULL -> now the last element in list
+		//printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
 	}
-	ptemp_exam->pnext_exam = pexam;	// Set the next-pointer of the last element in list to the new exam struct pointer
-	pexam->pnext_exam = NULL;	// Set next-pointer of new struct to NULL -> now the last element in list
-	//printf("[DEBUG] pexan wird an letzte Pruefung gehaengt:  pexam: %x ptemp_exam: %x ptemp_exam->pnext_exam: %x\n", pexam, ptemp_exam, ptemp_exam->pnext_exam);
-}
+	}
 /**************************************************************************************************
 Functions prints a list with the exams of the student.
 Parameters:
@@ -240,8 +242,15 @@ Returns:
 void free_all(student_t *student) {	// [TODO][ERROR][PRIO]
 
 	exam_t *ptemp_examdb = student->pfirst_exam; // Set temporary exam pointer to the pointer of the first exam struct
-	
-	free(ptemp_examdb);
+	exam_t *ptemp_examdb2;
+
+
+
+	while (ptemp_examdb->pnext_exam != NULL) {	// Loops through until last element with next pointer = NULL
+		ptemp_examdb2 = ptemp_examdb;
+		ptemp_examdb = ptemp_examdb->pnext_exam;
+		free(ptemp_examdb2);
+	}
 }
 /**************************************************************************************************
 Functions searches exam by course name
@@ -266,12 +275,12 @@ void search_course(student_t *pstudent) {
 
 		if (~strcmp(ptemp_examdb->course, course)) {	// If course names are equal -> course found -> break loop
 			pexam_search = ptemp_examdb;
+			printf("Die gesuchte Veranstaltung ist: %s Datum: %s Note: %d Pruefer: %s\n", pexam_search->course, pexam_search->date, pexam_search->points, pexam_search->prof);	// Print out exam
 			break;
 		}
 		ptemp_examdb = ptemp_examdb->pnext_exam;// Set temporary pointer to next exam struct
 	}
-	if (pexam_search == NULL)printf("Falsche Eingabe!\n");
-	else printf("Die gesuchte Veranstaltung ist: %s Datum: %s Note: %d Pruefer: %s\n", pexam_search->course, pexam_search->date, pexam_search->points, pexam_search->prof);	// Print out exam
+	if (pexam_search == NULL) printf("Falsche Eingabe!\n");
 }
 
 /**************************************************************************************************
@@ -316,16 +325,18 @@ void save_list(student_t *student) {
 	if (f == NULL) {	// Handle errors
 		printf("Datei konnte nicht geoeffnet werden!\n");
 	}
+	else {
 
-	fwrite(student, sizeof(student_t), 1, f);	// [UNCLEAR] Write student struct to file
+		fwrite(student, sizeof(student_t), 1, f);	// [UNCLEAR] Write student struct to file
 
-	while (ptemp_examdb != NULL) {	// Loops through until last element with next pointer = NULL
+		while (ptemp_examdb != NULL) {	// Loops through until last element with next pointer = NULL
 
-		fwrite(ptemp_examdb, sizeof(exam_t), 1, f); // [UNCLEAR] Writes every exam struct to file
-	
-		ptemp_examdb = ptemp_examdb->pnext_exam; // Set temporary pointer to next exam struct
+			fwrite(ptemp_examdb, sizeof(exam_t), 1, f); // [UNCLEAR] Writes every exam struct to file
+
+			ptemp_examdb = ptemp_examdb->pnext_exam; // Set temporary pointer to next exam struct
+		}
+		fclose(f);	// Close file
 	}
-	fclose(f);	// Close file
 }
 
 /**************************************************************************************************
@@ -337,7 +348,6 @@ Returns:
 */
 void load_list(student_t *student) {		// [UNCLEAR]
 
-	//student_t *tmp;	// initialise temporary student-struct
 	exam_t exam_tmp; // initialise temporary exam-struct
 
 	FILE *f;	// Create stream and open file to read binary
@@ -346,35 +356,36 @@ void load_list(student_t *student) {		// [UNCLEAR]
 	if (f == NULL) {	// Handle errors
 		printf("Datei konnte nicht geoeffnet werden!\n");
 	}
+	else {
 
-	fread(student, sizeof(student_t), 1, f);	// Read student struct data and write it to tmp
+		fread(student, sizeof(student_t), 1, f);	// Read student struct data and write it to tmp
 
-	fseek(f, sizeof(student_t), SEEK_SET);	// Skip student-data
-	int first_exam_flag = 1;
-	exam_t *pexam = NULL;
-	exam_t *pexam_old = student->pfirst_exam;
-	
-	while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {
-		
-		pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
-		
-		if (pexam == NULL) {
-			free(pexam);
-			return 1;
+		int first_exam_flag = 1;
+		exam_t *pexam = NULL;
+		exam_t *pexam_old = student->pfirst_exam;
+
+		while (fread(&exam_tmp, sizeof(exam_t), 1, f) != 0) {
+
+			pexam = (struct exam*)malloc(sizeof(struct exam));	// Allocate memory for exam-struct
+
+			if (pexam == NULL) {
+				free(pexam);
+			}
+
+			strcpy(pexam->course, exam_tmp.course);
+			pexam->points = exam_tmp.points;
+			strcpy(pexam->date, exam_tmp.date);
+			strcpy(pexam->prof, exam_tmp.prof);
+			pexam->pnext_exam = NULL;
+
+			if (first_exam_flag) {
+				student->pfirst_exam = pexam;
+				first_exam_flag = 0;
+			}
+			else pexam_old->pnext_exam = pexam;		// Zuweisung des neuen elements an alten
+
+			pexam_old = pexam;	// next pointer
 		}
-
-		strcpy(pexam->course, exam_tmp.course);
-		pexam->points = exam_tmp.points;
-		strcpy(pexam->date, exam_tmp.date);	// lvalue must be changeable?
-		strcpy(pexam->prof, exam_tmp.prof);
-		pexam->pnext_exam = NULL;
-
-		if (first_exam_flag) {
-			student->pfirst_exam = pexam;
-			first_exam_flag = 0;
-		}else pexam_old->pnext_exam = pexam;		// Zuweisung des neuen elements an alten
-		
-		pexam_old = pexam;	// nächster pointer
+		fclose(f);	// Close file
 	}
-	fclose(f);	// Close file
-}
+} 
